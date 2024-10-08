@@ -3,51 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Bài thực hành 1</title>
+    <title>Video Player with SRT Subtitles</title>
+    <style>
+        video {
+            width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
-<body3>
-    <div align="center">
-        <h1>Trang wed gái xinh</h1>
-        <p> <strong>Trang</strong> này của mình làm nha </p>
-    </div>
-    <div align="center">
-        <table border="1">
-            <tr>
-                <th colspan="2">Phân loại khoa học</th>
-                <th rowspan="6"><img src="https://danongonline.com.vn/wp-content/uploads/2018/02/anh-girl-xinh-10.jpg" width="150" height="200" alt="hình gái đó"></th>
-            </tr>
-            <tr>
-                <td>Lớp:</td>
-                <td>Thú</td>
-            </tr>
-            <tr>
-                <td>Bộ:</td>
-                <td>Guốc chẵn</td>
-            </tr>
-            <tr>
-                <td>Họ:</td>
-                <td>Loài người</td>
-            </tr>
-            <tr>
-                <th colspan="2">Phân loài</th>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <ul>
-                        <li>Trâu nước</li>
-                        <li>Trâu rừng</li>
-                    </ul>
-                </td>
-            </tr>
+<body>
+    <h1>Video Player with Subtitles</h1>
+    <input type="file" id="videoInput" accept="video/*">
+    <br><br>
+    <input type="file" id="subtitleInput" accept=".srt">
+    <br><br>
+    <video id="videoPlayer" controls>
+        <track default id="subtitleTrack" kind="subtitles" srclang="en" label="English">
+    </video>
 
+    <script src="https://cdn.rawgit.com/matanki-saito/srt-webvtt/master/srt.js"></script>
+    <script>
+        document.getElementById('videoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const videoPlayer = document.getElementById('videoPlayer');
+                videoPlayer.src = url;
+            }
+        });
 
-        </table>
-    </div>
-    <div align="center">
-        <p>Hình ảnh được lấy từ trang <a href="https://danongonline.com.vn/tong-hop-anh-girl-xinh-hot-nhat-thang-1-nam-2018.html">wed này</a></p>
-    </div>
+        document.getElementById('subtitleInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const srtContent = e.target.result;
+                    const vttContent = convertSrtToVtt(srtContent);  // using srt-webvtt library
+                    const blob = new Blob([vttContent], {type: 'text/vtt'});
+                    const url = URL.createObjectURL(blob);
+                    const subtitleTrack = document.getElementById('subtitleTrack');
+                    subtitleTrack.src = url;
+                };
+                reader.readAsText(file);
+            }
+        });
 
-    
+        function convertSrtToVtt(srtContent) {
+            let vttContent = 'WEBVTT\n\n';
+            const lines = srtContent.split(/\r?\n/);
+            for (let line of lines) {
+                vttContent += line.replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2') + '\n';
+            }
+            return vttContent;
+        }
+    </script>
 </body>
 </html>
